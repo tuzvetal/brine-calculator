@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Калькулятор рассола — Коптимо з душею!</title>
+
+<link rel="apple-touch-icon" href="appicon.png">
+<link rel="icon" type="image/png" href="appicon.png">
+<link rel="manifest" href="manifest.json">
+<script src="jspdf.umd.min.js"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:radial-gradient(circle at top,#1a2a3b,#050811 70%);
+  color:#e0f7fa;
+}
+.wrap{max-width:420px;margin:0 auto;padding:16px;}
+.card{
+  background:rgba(10,20,40,0.92);
+  border-radius:18px;
+  padding:16px;
+  margin-bottom:14px;
+  border:1px solid rgba(0,255,255,0.25);
+  box-shadow:0 0 18px rgba(0,255,255,0.25);
+}
+h1{
+  text-align:center;
+  color:#18ffff;
+  text-shadow:0 0 10px rgba(24,255,255,1);
+}
+label{font-size:13px;color:#90caf9;}
+input,select{
+  width:100%;
+  padding:10px;
+  margin:6px 0 10px 0;
+  font-size:16px;
+  border-radius:12px;
+  background:#050c16;
+  color:#e0f7fa;
+  border:1px solid #00e5ff;
+}
+button{
+  width:100%;
+  margin-top:10px;
+  padding:12px;
+  border-radius:999px;
+  border:none;
+  background:linear-gradient(135deg,#00e5ff,#7c4dff);
+  color:#fff;
+  box-shadow:0 0 10px rgba(0,229,255,.7);
+}
+.btn-clear{
+  background:linear-gradient(135deg,#ff1744,#ff9100);
+}
+.result{margin-top:10px;font-size:15px;line-height:1.5}
+.unit{
+  display:flex;
+  gap:10px;
+}
+.unit button{
+  flex:1;
+}
+.unit .active{
+  box-shadow:0 0 14px rgba(0,255,255,1);
+}
+.small{
+  font-size:12px;
+  color:#90caf9;
+  text-align:center;
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<h1>Калькулятор рассола</h1>
+
+<div class="card">
+<label>Тип продукта</label>
+<select id="type">
+  <option value="meat">Мясо</option>
+  <option value="belly">Подчеревок</option>
+  <option value="fish">Рыба</option>
+</select>
+
+<label>Вес продукта</label>
+<input type="number" id="kg" step="0.01">
+
+<div class="unit">
+  <button id="btnKg" onclick="setUnit('kg')" class="active">кг</button>
+  <button id="btnG" onclick="setUnit('g')">г</button>
+</div>
+
+<label>Коррекция нитритной соли (%)</label>
+<input type="number" id="nitro" value="100">
+
+<button onclick="calc()">Рассчитать</button>
+<button onclick="shareRecipe()">Поделиться рецептом</button>
+<button class="btn-clear" onclick="clearAll()">Очистить</button>
+<button onclick="exportPDF()">Экспорт в PDF</button>
+
+<div class="result" id="out"></div>
+</div>
+
+<div class="card small">
+Коптимо з душею! ❤️<br>
+Работает офлайн · Можно добавить на главный экран
+</div>
+
+</div>
+
+<script>
+let unit = localStorage.getItem("unit") || "kg";
+let savedKg = localStorage.getItem("kg") || "1";
+
+document.getElementById("kg").value = savedKg;
+setUnit(unit);
+
+function setUnit(u){
+  unit = u;
+  localStorage.setItem("unit",u);
+  document.getElementById("btnKg").classList.toggle("active",u==="kg");
+  document.getElementById("btnG").classList.toggle("active",u==="g");
+}
+
+function clearAll(){
+  document.getElementById("kg").value = "";
+  document.getElementById("out").innerHTML = "";
+  localStorage.removeItem("kg");
+}
+
+function calc(){
+  let v = parseFloat(document.getElementById("kg").value || 0);
+  if(unit==="g") v = v / 1000;
+  localStorage.setItem("kg",v);
+
+  let nitro = (parseFloat(document.getElementById("nitro").value||100))/100;
+  let t = document.getElementById("type").value;
+  let r="";
+
+  if(t==="meat"){
+    r+=`Вода: <b>${500*v} мл</b><br>
+        Нитритная соль: <b>${(4.2*v*nitro).toFixed(2)} г</b><br>
+        Соль поваренная: <b>${(19.8*v).toFixed(2)} г</b><br>
+        Сахар: <b>${(5*v).toFixed(2)} г</b><br>
+        Перец: <b>${(3*v).toFixed(2)} г</b><br>
+        Чеснок: <b>${(3*v).toFixed(2)} г</b>`;
+  }
+  if(t==="belly"){
+    r+=`Вода: <b>${500*v} мл</b><br>
+        Нитритная соль: <b>${(4.2*v*nitro).toFixed(2)} г</b><br>
+        Соль поваренная: <b>${(25.8*v).toFixed(2)} г</b><br>
+        Сахар: <b>${(5*v).toFixed(2)} г</b><br>
+        Перец: <b>${(3*v).toFixed(2)} г</b><br>
+        Чеснок: <b>${(3*v).toFixed(2)} г</b>`;
+  }
+  if(t==="fish"){
+    r+=`Вода: <b>${1000*v} мл</b><br>
+        Соль: <b>${(60*v).toFixed(2)} г</b><br>
+        Сахар: <b>${(5*v).toFixed(2)} г</b><br>
+        Перец: <b>${(3*v).toFixed(2)} г</b><br>
+        Кориандр: <b>${(3*v).toFixed(2)} г</b>`;
+  }
+
+  document.getElementById("out").innerHTML=r;
+}
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js');
+}
+function shareRecipe(){
+  let text = document.getElementById("out").innerText;
+  if(!text){
+    alert("Сначала рассчитайте рецепт");
+    return;
+  }
+
+  let title = "Рассол — Коптимо з душею!";
+
+  if(navigator.share){
+    navigator.share({
+      title: title,
+      text: text
+    });
+  } else {
+    navigator.clipboard.writeText(text);
+    alert("Рецепт скопирован в буфер обмена");
+  }
+}
+function exportPDF(){
+  let text = document.getElementById("out").innerText;
+  if(!text){
+    alert("Сначала рассчитайте рецепт");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  doc.setFont("Helvetica");
+  doc.setFontSize(14);
+  doc.text("Калькулятор рассола", 10, 15);
+
+  doc.setFontSize(11);
+  let lines = doc.splitTextToSize(text, 180);
+  doc.text(lines, 10, 30);
+
+  doc.save("rassol.pdf");
+}
+
+</script>
+
+</body>
+</html>
