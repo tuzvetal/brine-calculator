@@ -147,23 +147,23 @@ function calc(){
         Нитритная соль: <b>${(4.2*v*nitro).toFixed(2)} г</b><br>
         Соль поваренная: <b>${(19.8*v).toFixed(2)} г</b><br>
         Сахар: <b>${(5*v).toFixed(2)} г</b><br>
-        Перец: <b>${(3*v).toFixed(2)} г</b><br>
-        Чеснок: <b>${(3*v).toFixed(2)} г</b>`;
+        Перец: <b>${(1*v).toFixed(2)} г</b><br>
+        Чеснок: <b>${(1*v).toFixed(2)} г</b>`;
   }
   if(t==="belly"){
     r+=`Вода: <b>${500*v} мл</b><br>
         Нитритная соль: <b>${(4.2*v*nitro).toFixed(2)} г</b><br>
         Соль поваренная: <b>${(25.8*v).toFixed(2)} г</b><br>
         Сахар: <b>${(5*v).toFixed(2)} г</b><br>
-        Перец: <b>${(3*v).toFixed(2)} г</b><br>
-        Чеснок: <b>${(3*v).toFixed(2)} г</b>`;
+        Перец: <b>${(1*v).toFixed(2)} г</b><br>
+        Чеснок: <b>${(1*v).toFixed(2)} г</b>`;
   }
   if(t==="fish"){
     r+=`Вода: <b>${1000*v} мл</b><br>
         Соль: <b>${(60*v).toFixed(2)} г</b><br>
         Сахар: <b>${(5*v).toFixed(2)} г</b><br>
-        Перец: <b>${(3*v).toFixed(2)} г</b><br>
-        Кориандр: <b>${(3*v).toFixed(2)} г</b>`;
+        Перец: <b>${(1*v).toFixed(2)} г</b><br>
+        Кориандр: <b>${(1*v).toFixed(2)} г</b>`;
   }
 
   document.getElementById("out").innerHTML=r;
@@ -216,3 +216,4 @@ function exportPDF(){
 
 </body>
 </html>
+
