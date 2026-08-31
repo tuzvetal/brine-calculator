@@ -1,4 +1,4 @@
-const CACHE_NAME = "smokehouse-tools-v3";
+const CACHE_NAME = "smokehouse-tools-v5";
 const FILES_TO_CACHE = [
   "./",
   "./index.html",

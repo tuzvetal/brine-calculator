@@ -267,7 +267,31 @@ input:focus,select:focus,textarea:focus{
     </select>
 
     <label class="label">Фото</label>
-    <input id="recipePhoto" type="file" accept="image/*" capture="environment" onchange="previewPhoto(event)">
+    
+    <input id="recipePhotoGallery"
+           type="file"
+           accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+           style="display:none"
+           onchange="previewPhoto(event)">
+
+    <input id="recipePhotoCamera"
+           type="file"
+           accept="image/*"
+           capture="environment"
+           style="display:none"
+           onchange="previewPhoto(event)">
+
+    <div class="actions" style="margin-top:8px">
+      <button type="button" class="btn" onclick="openGalleryPicker()">Выбрать из галереи</button>
+      <button type="button" class="btn orange" onclick="openCameraPicker()">Сделать фото</button>
+    </div>
+
+    <div class="tip" style="margin-top:8px">
+      «Выбрать из галереи» открывает системный выбор изображений. «Сделать фото» — камеру.
+    </div>
+
+    <img id="photoPreview" class="photo-preview" alt="Предпросмотр">
+    <div class="tip" style="margin-top:6px">Нажми на поле выше и выбери «Галерея», «Фото» или «Файлы».</div>
     <img id="photoPreview" class="photo-preview" alt="Предпросмотр">
 
     <label class="label">Ингредиенты</label>
@@ -518,7 +542,8 @@ function openRecipeModal(){
   document.getElementById("recipeCategory").value="Мясо";
   document.getElementById("recipeIngredients").value="";
   document.getElementById("recipeSteps").value="";
-  document.getElementById("recipePhoto").value="";
+  document.getElementById("recipePhotoGallery").value="";
+  document.getElementById("recipePhotoCamera").value="";
   currentPhotoData="";
   const img=document.getElementById("photoPreview");
   img.src=""; img.style.display="none";
@@ -542,7 +567,8 @@ async function editRecipe(id){
   document.getElementById("recipeCategory").value=r.category||"Другое";
   document.getElementById("recipeIngredients").value=r.ingredients||"";
   document.getElementById("recipeSteps").value=r.steps||"";
-  document.getElementById("recipePhoto").value="";
+  document.getElementById("recipePhotoGallery").value="";
+  document.getElementById("recipePhotoCamera").value="";
   currentPhotoData=r.photo||"";
   const img=document.getElementById("photoPreview");
   if(currentPhotoData){img.src=currentPhotoData;img.style.display="block"}
@@ -582,6 +608,21 @@ async function saveRecipe(){
   closeRecipeModal();
   switchPage("recipes");
   renderRecipes();
+}
+
+
+function openGalleryPicker(){
+  const input=document.getElementById("recipePhotoGallery");
+  if(!input) return;
+  input.value="";
+  input.click();
+}
+
+function openCameraPicker(){
+  const input=document.getElementById("recipePhotoCamera");
+  if(!input) return;
+  input.value="";
+  input.click();
 }
 
 function previewPhoto(event){
