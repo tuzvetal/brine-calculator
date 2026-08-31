@@ -400,20 +400,105 @@ function shareRecipe(){
 }
 
 function exportPDF(){
-  let text = document.getElementById("out").innerText;
-  if(!text){
+  const result = document.getElementById("out").innerHTML.trim();
+  if(!result){
     alert("Сначала рассчитайте рецепт");
     return;
   }
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  doc.setFont("Helvetica");
-  doc.setFontSize(14);
-  doc.text("Brine calculator / Smokehouse", 10, 15);
-  doc.setFontSize(11);
-  let lines = doc.splitTextToSize(text, 180);
-  doc.text(lines, 10, 30);
-  doc.save("rassol.pdf");
+
+  const typeEl = document.getElementById("type");
+  const typeName = typeEl.options[typeEl.selectedIndex].text;
+  const rawWeight = document.getElementById("kg").value || "";
+  const weightText = rawWeight ? `${rawWeight} ${unit}` : "";
+
+  const w = window.open("","_blank");
+  if(!w){
+    alert("Браузер заблокировал окно печати. Разрешите всплывающие окна для этого сайта.");
+    return;
+  }
+
+  w.document.open();
+  w.document.write(`<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Рассол — ${typeName}</title>
+<style>
+@page{size:A4;margin:0}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#fff;color:#111827;font-family:Arial,Helvetica,sans-serif}
+.page{
+  width:210mm;min-height:297mm;padding:18mm 18mm 16mm;
+  background:#fff;position:relative
+}
+.head{
+  padding:9mm;border-radius:5mm;
+  background:linear-gradient(145deg,#111827,#0b1220);
+  color:white;margin-bottom:9mm
+}
+.kicker{font-size:8pt;letter-spacing:2px;font-weight:900;color:#67e8f9}
+h1{font-size:25pt;line-height:1.08;margin:2mm 0 1mm}
+.sub{font-size:10pt;color:#cbd5e1}
+.info{
+  display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-bottom:7mm
+}
+.info div{
+  border:1px solid #e2e8f0;border-radius:4mm;padding:4mm;background:#f8fafc
+}
+.info b{display:block;font-size:9pt;color:#64748b;margin-bottom:1mm}
+.info span{font-size:12pt;font-weight:800}
+.result{
+  border:1px solid #cbd5e1;border-radius:5mm;padding:7mm;
+  font-size:12pt;line-height:1.9
+}
+.result b{color:#0369a1}
+.note{
+  margin-top:7mm;padding:4mm 5mm;border-left:3px solid #22d3ee;
+  background:#f0f9ff;color:#475569;font-size:9.5pt;line-height:1.5
+}
+.footer{
+  position:absolute;left:18mm;right:18mm;bottom:9mm;
+  border-top:1px solid #e2e8f0;padding-top:3mm;
+  display:flex;justify-content:space-between;color:#94a3b8;font-size:8pt
+}
+@media print{
+  .page{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="head">
+    <div class="kicker">SMOKEHOUSE TOOLS</div>
+    <h1>Калькулятор рассола</h1>
+    <div class="sub">Коптимо з душею</div>
+  </div>
+
+  <div class="info">
+    <div><b>Продукт</b><span>${typeName}</span></div>
+    <div><b>Вес</b><span>${weightText}</span></div>
+  </div>
+
+  <div class="result">${result}</div>
+
+  <div class="note">
+    Расчёт сформирован приложением Smokehouse. Перед использованием рецепта учитывайте
+    особенности продукта, способ посола и условия хранения.
+  </div>
+
+  <div class="footer">
+    <span>Smokehouse</span>
+    <span>${new Date().toLocaleDateString("ru-RU")}</span>
+  </div>
+</div>
+
+<script>
+setTimeout(()=>window.print(),350);
+<\/script>
+</body>
+</html>`);
+  w.document.close();
 }
 
 /* ---------- IndexedDB recipes ---------- */
