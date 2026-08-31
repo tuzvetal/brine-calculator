@@ -1,5 +1,4 @@
-const CACHE_NAME = "brine-calculator-v1";
-
+const CACHE_NAME = "smokehouse-tools-v3";
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
@@ -8,35 +7,32 @@ const FILES_TO_CACHE = [
   "./jspdf.umd.min.js"
 ];
 
-// Установка Service Worker
 self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(FILES_TO_CACHE);
-    })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
   );
   self.skipWaiting();
 });
 
-// Активация
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(
-        keys.map(k => {
-          if (k !== CACHE_NAME) return caches.delete(k);
-        })
-      )
+      Promise.all(keys.map(k => k !== CACHE_NAME ? caches.delete(k) : null))
     )
   );
   self.clients.claim();
 });
 
-// Перехват запросов (офлайн-режим)
 self.addEventListener("fetch", event => {
+  if (event.request.method !== "GET") return;
   event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
+    caches.match(event.request).then(cached => {
+      if (cached) return cached;
+      return fetch(event.request).then(response => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        return response;
+      }).catch(() => caches.match("./index.html"));
     })
   );
 });

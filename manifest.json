@@ -1,11 +1,11 @@
 {
-  "name": "Калькулятор рассола — Коптимо з душею!",
-  "short_name": "Рассол",
-  "description": "Калькулятор рассола для мяса, подчеревка и рыбы. Работает офлайн.",
+  "name": "Smokehouse — рассол и рецепты",
+  "short_name": "Smokehouse",
+  "description": "Калькулятор рассола и личная книга рецептов с фотографиями. Работает офлайн.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#050811",
-  "theme_color": "#18ffff",
+  "background_color": "#070a0f",
+  "theme_color": "#0b1017",
   "orientation": "portrait",
   "icons": [
     {

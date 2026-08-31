@@ -2,8 +2,9 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Калькулятор рассола — Коптимо з душею!</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1017">
+<title>Smokehouse — рассол и рецепты</title>
 
 <link rel="apple-touch-icon" href="appicon.png">
 <link rel="icon" type="image/png" href="appicon.png">
@@ -11,114 +12,297 @@
 <script src="jspdf.umd.min.js"></script>
 
 <style>
+:root{
+  --bg:#070a0f;
+  --panel:#111821;
+  --panel2:#0d141d;
+  --line:#253140;
+  --text:#f8fafc;
+  --muted:#94a3b8;
+  --cyan:#22d3ee;
+  --blue:#3b82f6;
+  --green:#22c55e;
+  --orange:#f97316;
+  --red:#ef4444;
+  --yellow:#eab308;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
 body{
   margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:radial-gradient(circle at top,#1a2a3b,#050811 70%);
-  color:#e0f7fa;
+  min-height:100vh;
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  background:
+    radial-gradient(900px 500px at 10% -10%,rgba(34,211,238,.12),transparent 55%),
+    radial-gradient(850px 480px at 100% 0%,rgba(249,115,22,.12),transparent 55%),
+    linear-gradient(180deg,#0b1017,#06080c 72%);
 }
-.wrap{max-width:420px;margin:0 auto;padding:16px;}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.wrap{max-width:500px;margin:0 auto;padding:14px 14px 94px}
+.hero{
+  position:relative;overflow:hidden;padding:20px;border:1px solid var(--line);
+  border-radius:26px;background:linear-gradient(145deg,#151e29,#0d141d);
+  box-shadow:0 18px 50px rgba(0,0,0,.34);margin-bottom:14px
+}
+.hero:after{
+  content:"";position:absolute;width:170px;height:170px;border-radius:50%;
+  background:rgba(249,115,22,.14);filter:blur(24px);right:-70px;top:-85px
+}
+.brand{font-size:11px;letter-spacing:2.5px;color:#7dd3fc;font-weight:900}
+.title{font-size:28px;font-weight:950;letter-spacing:-.8px;margin:6px 0 3px}
+.subtitle{font-size:13px;color:var(--muted)}
 .card{
-  background:rgba(10,20,40,0.92);
-  border-radius:18px;
-  padding:16px;
-  margin-bottom:14px;
-  border:1px solid rgba(0,255,255,0.25);
-  box-shadow:0 0 18px rgba(0,255,255,0.25);
+  background:linear-gradient(160deg,rgba(24,33,45,.98),rgba(13,19,27,.98));
+  border:1px solid var(--line);border-radius:22px;padding:16px;margin-bottom:12px;
+  box-shadow:0 14px 34px rgba(0,0,0,.25)
 }
-h1{
-  text-align:center;
-  color:#18ffff;
-  text-shadow:0 0 10px rgba(24,255,255,1);
+.section-title{font-size:18px;font-weight:900;margin:0 0 12px}
+.label{
+  display:block;font-size:11px;color:var(--muted);font-weight:850;
+  letter-spacing:.8px;text-transform:uppercase;margin:10px 0 6px
 }
-label{font-size:13px;color:#90caf9;}
-input,select{
-  width:100%;
-  padding:10px;
-  margin:6px 0 10px 0;
-  font-size:16px;
-  border-radius:12px;
-  background:#050c16;
-  color:#e0f7fa;
-  border:1px solid #00e5ff;
+input,select,textarea{
+  width:100%;border:1px solid #334155;border-radius:14px;background:#090f16;
+  color:white;padding:12px;font-size:16px;outline:none
 }
-button{
-  width:100%;
-  margin-top:10px;
-  padding:12px;
-  border-radius:999px;
-  border:none;
-  background:linear-gradient(135deg,#00e5ff,#7c4dff);
-  color:#fff;
-  box-shadow:0 0 10px rgba(0,229,255,.7);
+textarea{min-height:120px;resize:vertical;line-height:1.45}
+input:focus,select:focus,textarea:focus{
+  border-color:#38bdf8;box-shadow:0 0 0 3px rgba(56,189,248,.12)
 }
-.btn-clear{
-  background:linear-gradient(135deg,#ff1744,#ff9100);
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{
+  width:100%;border:0;border-radius:15px;padding:12px 13px;color:white;
+  background:linear-gradient(135deg,#2563eb,#0891b2);font-weight:850;font-size:13px;
+  box-shadow:0 9px 20px rgba(37,99,235,.18)
 }
-.result{margin-top:10px;font-size:15px;line-height:1.5}
-.unit{
-  display:flex;
-  gap:10px;
-}
+.btn.orange{background:linear-gradient(135deg,#f59e0b,#f97316)}
+.btn.green{background:linear-gradient(135deg,#16a34a,#22c55e)}
+.btn.red{background:linear-gradient(135deg,#ef4444,#f97316)}
+.btn.gray{background:linear-gradient(135deg,#475569,#1e293b)}
+.btn.ghost{background:#101721;border:1px solid #334155;box-shadow:none}
+.btn + .btn{margin-top:9px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.unit{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:5px}
 .unit button{
-  flex:1;
+  border:1px solid #334155;border-radius:13px;padding:10px;background:#0a1018;
+  color:#cbd5e1;font-weight:800
 }
-.unit .active{
-  box-shadow:0 0 14px rgba(0,255,255,1);
+.unit button.active{
+  color:#071014;background:linear-gradient(135deg,#67e8f9,#22d3ee);
+  border-color:transparent;box-shadow:0 8px 20px rgba(34,211,238,.18)
 }
-.small{
-  font-size:12px;
-  color:#90caf9;
-  text-align:center;
+.result{
+  margin-top:14px;background:#0a1119;border:1px solid #203040;border-radius:17px;
+  padding:14px;line-height:1.7;font-size:15px
+}
+.result:empty{display:none}
+.result b{color:#7dd3fc}
+.tip{font-size:12px;color:var(--muted);line-height:1.5}
+.tabs{
+  position:fixed;left:50%;bottom:max(12px,env(safe-area-inset-bottom));
+  transform:translateX(-50%);z-index:50;width:min(472px,calc(100% - 24px));
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px;
+  border-radius:20px;background:rgba(13,20,29,.94);border:1px solid #293647;
+  backdrop-filter:blur(14px);box-shadow:0 18px 45px rgba(0,0,0,.45)
+}
+.tab{
+  border:0;border-radius:14px;padding:11px;background:transparent;color:#94a3b8;font-weight:900
+}
+.tab.active{color:white;background:linear-gradient(135deg,#2563eb,#0891b2)}
+.page{display:none}.page.active{display:block}
+.recipe-toolbar{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:12px}
+.recipe-toolbar .btn{width:auto;padding-left:16px;padding-right:16px}
+.recipe-list{display:grid;gap:12px}
+.recipe-card{
+  overflow:hidden;border:1px solid var(--line);border-radius:20px;background:#0d141d
+}
+.recipe-image{
+  width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#091018
+}
+.recipe-placeholder{
+  width:100%;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,#121c28,#0a1017);color:#64748b;font-weight:850
+}
+.recipe-body{padding:14px}
+.recipe-title{font-size:18px;font-weight:950;margin:0 0 5px}
+.recipe-meta{font-size:12px;color:#7dd3fc;margin-bottom:8px}
+.recipe-text{
+  color:#cbd5e1;font-size:13px;line-height:1.55;white-space:pre-wrap;
+  display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden
+}
+.recipe-card.open .recipe-text{-webkit-line-clamp:unset}
+.recipe-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:12px}
+.recipe-actions button{padding:9px;font-size:12px}
+.empty{
+  text-align:center;padding:28px 16px;color:#64748b;border:1px dashed #334155;
+  border-radius:18px;background:rgba(10,16,24,.45)
+}
+.modal{
+  position:fixed;inset:0;z-index:100;display:none;align-items:flex-end;
+  background:rgba(0,0,0,.64);backdrop-filter:blur(5px)
+}
+.modal.show{display:flex}
+.sheet{
+  width:min(520px,100%);max-height:92vh;overflow:auto;margin:0 auto;
+  background:#101720;border:1px solid #2a3748;border-radius:26px 26px 0 0;
+  padding:16px 16px calc(20px + env(safe-area-inset-bottom))
+}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sheet-head h2{font-size:20px;margin:0}
+.close{
+  width:38px;height:38px;border:1px solid #334155;border-radius:50%;
+  color:white;background:#0a1018;font-size:20px
+}
+.photo-preview{
+  width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:16px;margin-top:10px;
+  border:1px solid #334155;display:none
+}
+.note{
+  padding:10px 12px;border-radius:14px;background:rgba(34,211,238,.08);
+  border:1px solid rgba(34,211,238,.18);font-size:12px;color:#bae6fd;line-height:1.5
+}
+.small{font-size:11px;color:#64748b;text-align:center;margin-top:12px}
+@media(max-width:370px){
+  .grid2,.actions{grid-template-columns:1fr}
+  .recipe-actions{grid-template-columns:1fr}
 }
 </style>
 </head>
 
 <body>
 <div class="wrap">
+  <div class="hero">
+    <div class="brand">SMOKEHOUSE TOOLS</div>
+    <div class="title">Коптимо з душею</div>
+    <div class="subtitle">Калькулятор рассола и личная книга рецептов</div>
+  </div>
 
-<h1>Калькулятор рассола</h1>
+  <section id="calculatorPage" class="page active">
+    <div class="card">
+      <div class="section-title">Калькулятор рассола</div>
 
-<div class="card">
-<label>Тип продукта</label>
-<select id="type">
-  <option value="meat">Мясо</option>
-  <option value="belly">Подчеревок</option>
-  <option value="fish">Рыба</option>
-</select>
+      <label class="label">Тип продукта</label>
+      <select id="type">
+        <option value="meat">Мясо</option>
+        <option value="belly">Подчеревок</option>
+        <option value="fish">Рыба</option>
+      </select>
 
-<label>Вес продукта</label>
-<input type="number" id="kg" step="0.01">
+      <label class="label">Вес продукта</label>
+      <input type="number" id="kg" step="0.01" min="0" inputmode="decimal" placeholder="Например, 2.5">
 
-<div class="unit">
-  <button id="btnKg" onclick="setUnit('kg')" class="active">кг</button>
-  <button id="btnG" onclick="setUnit('g')">г</button>
+      <div class="unit">
+        <button id="btnKg" onclick="setUnit('kg')" class="active">кг</button>
+        <button id="btnG" onclick="setUnit('g')">г</button>
+      </div>
+
+      <label class="label">Коррекция нитритной соли (%)</label>
+      <input type="number" id="nitro" value="100" min="0" step="1" inputmode="decimal">
+
+      <button class="btn green" onclick="calc()" style="margin-top:12px">Рассчитать</button>
+
+      <div class="result" id="out"></div>
+
+      <div class="actions">
+        <button class="btn" onclick="shareRecipe()">Поделиться</button>
+        <button class="btn" onclick="saveCalculatedAsRecipe()">В рецепты</button>
+        <button class="btn gray" onclick="exportPDF()">Экспорт PDF</button>
+        <button class="btn red" onclick="clearAll()">Очистить</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">О приложении</div>
+      <div class="tip">
+        Калькулятор работает офлайн. Формулы расчёта сохранены такими же, как в исходной версии.
+        Книга рецептов хранится локально на этом устройстве.
+      </div>
+    </div>
+  </section>
+
+  <section id="recipesPage" class="page">
+    <div class="recipe-toolbar">
+      <input id="recipeSearch" type="search" placeholder="Поиск рецептов..." oninput="renderRecipes()">
+      <button class="btn green" onclick="openRecipeModal()">+ Добавить</button>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Мои рецепты</div>
+      <div class="tip" style="margin-bottom:12px">
+        Можно добавлять фото, название, категорию, ингредиенты и описание приготовления.
+      </div>
+      <div id="recipeList" class="recipe-list"></div>
+    </div>
+  </section>
 </div>
 
-<label>Коррекция нитритной соли (%)</label>
-<input type="number" id="nitro" value="100">
+<nav class="tabs">
+  <button id="tabCalculator" class="tab active" onclick="switchPage('calculator')">Калькулятор</button>
+  <button id="tabRecipes" class="tab" onclick="switchPage('recipes')">Рецепты</button>
+</nav>
 
-<button onclick="calc()">Рассчитать</button>
-<button onclick="shareRecipe()">Поделиться рецептом</button>
-<button class="btn-clear" onclick="clearAll()">Очистить</button>
-<button onclick="exportPDF()">Экспорт в PDF</button>
+<div id="recipeModal" class="modal" onclick="modalBackdrop(event)">
+  <div class="sheet">
+    <div class="sheet-head">
+      <h2 id="recipeModalTitle">Новый рецепт</h2>
+      <button class="close" onclick="closeRecipeModal()">×</button>
+    </div>
 
-<div class="result" id="out"></div>
-</div>
+    <input type="hidden" id="recipeId">
 
-<div class="card small">
-Коптимо з душею! ❤️<br>
-Работает офлайн · Можно добавить на главный экран
-</div>
+    <label class="label">Название</label>
+    <input id="recipeName" placeholder="Например, копчёная грудинка">
 
+    <label class="label">Категория</label>
+    <select id="recipeCategory">
+      <option>Мясо</option>
+      <option>Рыба</option>
+      <option>Птица</option>
+      <option>Колбасы</option>
+      <option>Сало / подчеревок</option>
+      <option>Рассолы</option>
+      <option>Другое</option>
+    </select>
+
+    <label class="label">Фото</label>
+    <input id="recipePhoto" type="file" accept="image/*" capture="environment" onchange="previewPhoto(event)">
+    <img id="photoPreview" class="photo-preview" alt="Предпросмотр">
+
+    <label class="label">Ингредиенты</label>
+    <textarea id="recipeIngredients" placeholder="Соль, специи, мясо..."></textarea>
+
+    <label class="label">Приготовление</label>
+    <textarea id="recipeSteps" placeholder="Опиши этапы приготовления, температуру и время..."></textarea>
+
+    <div class="note" style="margin-top:12px">
+      Фото автоматически уменьшается перед сохранением, чтобы не занимать слишком много памяти телефона.
+    </div>
+
+    <div class="actions">
+      <button class="btn green" onclick="saveRecipe()">Сохранить</button>
+      <button class="btn gray" onclick="closeRecipeModal()">Отмена</button>
+    </div>
+  </div>
 </div>
 
 <script>
 let unit = localStorage.getItem("unit") || "kg";
 let savedKg = localStorage.getItem("kg") || "1";
+let currentPhotoData = "";
 
 document.getElementById("kg").value = savedKg;
 setUnit(unit);
+
+function switchPage(page){
+  const calc = page === "calculator";
+  document.getElementById("calculatorPage").classList.toggle("active",calc);
+  document.getElementById("recipesPage").classList.toggle("active",!calc);
+  document.getElementById("tabCalculator").classList.toggle("active",calc);
+  document.getElementById("tabRecipes").classList.toggle("active",!calc);
+  if(!calc) renderRecipes();
+}
 
 function setUnit(u){
   unit = u;
@@ -134,9 +318,14 @@ function clearAll(){
 }
 
 function calc(){
-  let v = parseFloat(document.getElementById("kg").value || 0);
-  if(unit==="g") v = v / 1000;
-  localStorage.setItem("kg",v);
+  let raw = parseFloat(document.getElementById("kg").value || 0);
+  if(raw <= 0){
+    alert("Введите вес продукта");
+    return;
+  }
+
+  let v = unit==="g" ? raw/1000 : raw;
+  localStorage.setItem("kg",raw);
 
   let nitro = (parseFloat(document.getElementById("nitro").value||100))/100;
   let t = document.getElementById("type").value;
@@ -147,73 +336,311 @@ function calc(){
         Нитритная соль: <b>${(4.2*v*nitro).toFixed(2)} г</b><br>
         Соль поваренная: <b>${(19.8*v).toFixed(2)} г</b><br>
         Сахар: <b>${(5*v).toFixed(2)} г</b><br>
-        Перец: <b>${(1*v).toFixed(2)} г</b><br>
-        Чеснок: <b>${(1*v).toFixed(2)} г</b>`;
+        Перец: <b>${(3*v).toFixed(2)} г</b><br>
+        Чеснок: <b>${(3*v).toFixed(2)} г</b>`;
   }
   if(t==="belly"){
     r+=`Вода: <b>${500*v} мл</b><br>
         Нитритная соль: <b>${(4.2*v*nitro).toFixed(2)} г</b><br>
         Соль поваренная: <b>${(25.8*v).toFixed(2)} г</b><br>
         Сахар: <b>${(5*v).toFixed(2)} г</b><br>
-        Перец: <b>${(1*v).toFixed(2)} г</b><br>
-        Чеснок: <b>${(1*v).toFixed(2)} г</b>`;
+        Перец: <b>${(3*v).toFixed(2)} г</b><br>
+        Чеснок: <b>${(3*v).toFixed(2)} г</b>`;
   }
   if(t==="fish"){
     r+=`Вода: <b>${1000*v} мл</b><br>
         Соль: <b>${(60*v).toFixed(2)} г</b><br>
         Сахар: <b>${(5*v).toFixed(2)} г</b><br>
-        Перец: <b>${(1*v).toFixed(2)} г</b><br>
-        Кориандр: <b>${(1*v).toFixed(2)} г</b>`;
+        Перец: <b>${(3*v).toFixed(2)} г</b><br>
+        Кориандр: <b>${(3*v).toFixed(2)} г</b>`;
   }
 
   document.getElementById("out").innerHTML=r;
 }
 
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js');
-}
 function shareRecipe(){
   let text = document.getElementById("out").innerText;
   if(!text){
     alert("Сначала рассчитайте рецепт");
     return;
   }
-
   let title = "Рассол — Коптимо з душею!";
-
   if(navigator.share){
-    navigator.share({
-      title: title,
-      text: text
-    });
+    navigator.share({title,text}).catch(()=>{});
+  } else if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(()=>alert("Рецепт скопирован"));
   } else {
-    navigator.clipboard.writeText(text);
-    alert("Рецепт скопирован в буфер обмена");
+    alert(text);
   }
 }
+
 function exportPDF(){
   let text = document.getElementById("out").innerText;
   if(!text){
     alert("Сначала рассчитайте рецепт");
     return;
   }
-
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-
   doc.setFont("Helvetica");
   doc.setFontSize(14);
-  doc.text("Калькулятор рассола", 10, 15);
-
+  doc.text("Brine calculator / Smokehouse", 10, 15);
   doc.setFontSize(11);
   let lines = doc.splitTextToSize(text, 180);
   doc.text(lines, 10, 30);
-
   doc.save("rassol.pdf");
 }
 
-</script>
+/* ---------- IndexedDB recipes ---------- */
+const DB_NAME = "smokehouseRecipesDB";
+const DB_VERSION = 1;
+const STORE = "recipes";
+let dbPromise = null;
 
+function getDB(){
+  if(dbPromise) return dbPromise;
+  dbPromise = new Promise((resolve,reject)=>{
+    const req = indexedDB.open(DB_NAME,DB_VERSION);
+    req.onupgradeneeded = () => {
+      const db=req.result;
+      if(!db.objectStoreNames.contains(STORE)){
+        const store=db.createObjectStore(STORE,{keyPath:"id",autoIncrement:true});
+        store.createIndex("updatedAt","updatedAt");
+      }
+    };
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+  return dbPromise;
+}
+
+async function getAllRecipes(){
+  const db=await getDB();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(STORE,"readonly");
+    const req=tx.objectStore(STORE).getAll();
+    req.onsuccess=()=>resolve(req.result||[]);
+    req.onerror=()=>reject(req.error);
+  });
+}
+
+async function getRecipe(id){
+  const db=await getDB();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(STORE,"readonly");
+    const req=tx.objectStore(STORE).get(Number(id));
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+}
+
+async function putRecipe(recipe){
+  const db=await getDB();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(STORE,"readwrite");
+    const store=tx.objectStore(STORE);
+    const req=recipe.id ? store.put(recipe) : store.add(recipe);
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+}
+
+async function removeRecipe(id){
+  const db=await getDB();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(STORE,"readwrite");
+    const req=tx.objectStore(STORE).delete(Number(id));
+    req.onsuccess=()=>resolve();
+    req.onerror=()=>reject(req.error);
+  });
+}
+
+function esc(s){
+  return String(s||"")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+async function renderRecipes(){
+  const box=document.getElementById("recipeList");
+  if(!box) return;
+  let recipes=await getAllRecipes();
+  const q=(document.getElementById("recipeSearch").value||"").trim().toLowerCase();
+
+  recipes.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  if(q){
+    recipes=recipes.filter(r=>
+      (r.name||"").toLowerCase().includes(q) ||
+      (r.category||"").toLowerCase().includes(q) ||
+      (r.ingredients||"").toLowerCase().includes(q) ||
+      (r.steps||"").toLowerCase().includes(q)
+    );
+  }
+
+  if(!recipes.length){
+    box.innerHTML="<div class='empty'>Пока нет рецептов. Нажми «+ Добавить» и создай первый.</div>";
+    return;
+  }
+
+  box.innerHTML=recipes.map(r=>{
+    const photo=r.photo
+      ? `<img class="recipe-image" src="${r.photo}" alt="">`
+      : `<div class="recipe-placeholder">Нет фото</div>`;
+    const body=[r.ingredients,r.steps].filter(Boolean).join("\n\n");
+    return `
+      <article class="recipe-card" id="recipe-${r.id}">
+        ${photo}
+        <div class="recipe-body">
+          <h3 class="recipe-title">${esc(r.name)}</h3>
+          <div class="recipe-meta">${esc(r.category||"Без категории")}</div>
+          <div class="recipe-text">${esc(body)}</div>
+          <div class="recipe-actions">
+            <button class="btn ghost" onclick="toggleRecipe(${r.id})">Подробнее</button>
+            <button class="btn" onclick="editRecipe(${r.id})">Изменить</button>
+            <button class="btn red" onclick="deleteRecipe(${r.id})">Удалить</button>
+          </div>
+        </div>
+      </article>`;
+  }).join("");
+}
+
+function toggleRecipe(id){
+  document.getElementById("recipe-"+id)?.classList.toggle("open");
+}
+
+function openRecipeModal(){
+  document.getElementById("recipeModalTitle").textContent="Новый рецепт";
+  document.getElementById("recipeId").value="";
+  document.getElementById("recipeName").value="";
+  document.getElementById("recipeCategory").value="Мясо";
+  document.getElementById("recipeIngredients").value="";
+  document.getElementById("recipeSteps").value="";
+  document.getElementById("recipePhoto").value="";
+  currentPhotoData="";
+  const img=document.getElementById("photoPreview");
+  img.src=""; img.style.display="none";
+  document.getElementById("recipeModal").classList.add("show");
+}
+
+function closeRecipeModal(){
+  document.getElementById("recipeModal").classList.remove("show");
+}
+
+function modalBackdrop(e){
+  if(e.target.id==="recipeModal") closeRecipeModal();
+}
+
+async function editRecipe(id){
+  const r=await getRecipe(id);
+  if(!r) return;
+  document.getElementById("recipeModalTitle").textContent="Редактировать рецепт";
+  document.getElementById("recipeId").value=r.id;
+  document.getElementById("recipeName").value=r.name||"";
+  document.getElementById("recipeCategory").value=r.category||"Другое";
+  document.getElementById("recipeIngredients").value=r.ingredients||"";
+  document.getElementById("recipeSteps").value=r.steps||"";
+  document.getElementById("recipePhoto").value="";
+  currentPhotoData=r.photo||"";
+  const img=document.getElementById("photoPreview");
+  if(currentPhotoData){img.src=currentPhotoData;img.style.display="block"}
+  else{img.src="";img.style.display="none"}
+  document.getElementById("recipeModal").classList.add("show");
+}
+
+async function deleteRecipe(id){
+  if(!confirm("Удалить этот рецепт?")) return;
+  await removeRecipe(id);
+  renderRecipes();
+}
+
+async function saveRecipe(){
+  const name=document.getElementById("recipeName").value.trim();
+  if(!name){
+    alert("Введите название рецепта");
+    return;
+  }
+
+  const idValue=document.getElementById("recipeId").value;
+  const old=idValue ? await getRecipe(Number(idValue)) : null;
+
+  const recipe={
+    ...(old||{}),
+    name,
+    category:document.getElementById("recipeCategory").value,
+    ingredients:document.getElementById("recipeIngredients").value.trim(),
+    steps:document.getElementById("recipeSteps").value.trim(),
+    photo:currentPhotoData || "",
+    createdAt:old?.createdAt || Date.now(),
+    updatedAt:Date.now()
+  };
+  if(idValue) recipe.id=Number(idValue);
+
+  await putRecipe(recipe);
+  closeRecipeModal();
+  switchPage("recipes");
+  renderRecipes();
+}
+
+function previewPhoto(event){
+  const file=event.target.files?.[0];
+  if(!file) return;
+  if(!file.type.startsWith("image/")){
+    alert("Выберите файл изображения");
+    return;
+  }
+  compressImage(file,1280,0.82).then(data=>{
+    currentPhotoData=data;
+    const img=document.getElementById("photoPreview");
+    img.src=data; img.style.display="block";
+  }).catch(()=>alert("Не удалось обработать изображение"));
+}
+
+function compressImage(file,maxSide=1280,quality=.82){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onerror=reject;
+    reader.onload=()=>{
+      const img=new Image();
+      img.onerror=reject;
+      img.onload=()=>{
+        let w=img.width,h=img.height;
+        const scale=Math.min(1,maxSide/Math.max(w,h));
+        w=Math.max(1,Math.round(w*scale));
+        h=Math.max(1,Math.round(h*scale));
+        const c=document.createElement("canvas");
+        c.width=w;c.height=h;
+        const ctx=c.getContext("2d");
+        ctx.drawImage(img,0,0,w,h);
+        resolve(c.toDataURL("image/jpeg",quality));
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function saveCalculatedAsRecipe(){
+  const text=document.getElementById("out").innerText.trim();
+  if(!text){
+    alert("Сначала рассчитайте рецепт");
+    return;
+  }
+  const type=document.getElementById("type");
+  const typeName=type.options[type.selectedIndex].text;
+  openRecipeModal();
+  document.getElementById("recipeName").value="Рассол — "+typeName;
+  document.getElementById("recipeCategory").value="Рассолы";
+  document.getElementById("recipeIngredients").value=text;
+}
+
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js");
+}
+
+getDB().catch(console.error);
+</script>
 </body>
 </html>
-
