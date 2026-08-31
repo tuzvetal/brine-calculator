@@ -133,7 +133,7 @@ input:focus,select:focus,textarea:focus{
   display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden
 }
 .recipe-card.open .recipe-text{-webkit-line-clamp:unset}
-.recipe-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:12px}
+.recipe-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
 .recipe-actions button{padding:9px;font-size:12px}
 .empty{
   text-align:center;padding:28px 16px;color:#64748b;border:1px dashed #334155;
@@ -233,6 +233,7 @@ input:focus,select:focus,textarea:focus{
       <div class="tip" style="margin-bottom:12px">
         Можно добавлять фото, название, категорию, ингредиенты и описание приготовления.
       </div>
+      <button class="btn gray" onclick="printAllRecipesPDF()" style="margin-bottom:12px">Книга PDF</button>
       <div id="recipeList" class="recipe-list"></div>
     </div>
   </section>
@@ -523,6 +524,7 @@ async function renderRecipes(){
           <div class="recipe-text">${esc(body)}</div>
           <div class="recipe-actions">
             <button class="btn ghost" onclick="toggleRecipe(${r.id})">Подробнее</button>
+            <button class="btn gray" onclick="printRecipePDF(${r.id})">PDF</button>
             <button class="btn" onclick="editRecipe(${r.id})">Изменить</button>
             <button class="btn red" onclick="deleteRecipe(${r.id})">Удалить</button>
           </div>
@@ -533,6 +535,219 @@ async function renderRecipes(){
 
 function toggleRecipe(id){
   document.getElementById("recipe-"+id)?.classList.toggle("open");
+}
+
+
+function printableText(s){
+  return esc(s||"").replace(/\n/g,"<br>");
+}
+
+
+function printableDate(ts){
+  try{
+    return new Date(ts||Date.now()).toLocaleDateString("ru-RU",{
+      year:"numeric",month:"long",day:"numeric"
+    });
+  }catch(e){ return ""; }
+}
+
+function recipePrintBlock(r, pageNo){
+  const photo = r.photo
+    ? `<img class="photo" src="${r.photo}" alt="Фото рецепта">`
+    : `<div class="photo-placeholder">SMOKEHOUSE</div>`;
+
+  const ing = r.ingredients
+    ? `<section><h3>Ингредиенты</h3><div>${printableText(r.ingredients)}</div></section>`
+    : "";
+
+  const steps = r.steps
+    ? `<section><h3>Приготовление</h3><div>${printableText(r.steps)}</div></section>`
+    : "";
+
+  const created = r.createdAt
+    ? `<span>Добавлен: ${esc(printableDate(r.createdAt))}</span>`
+    : "";
+
+  return `
+    <article class="recipe-print">
+      <div class="recipe-topline">
+        <span>SMOKEHOUSE RECIPE BOOK</span>
+        <span>${esc(r.category||"Рецепт")}</span>
+      </div>
+
+      ${photo}
+
+      <div class="recipe-title-wrap">
+        <div class="eyebrow">${esc(r.category||"Рецепт")}</div>
+        <h1>${esc(r.name||"Рецепт")}</h1>
+        <div class="meta">${created}</div>
+      </div>
+
+      ${ing}
+      ${steps}
+
+      <div class="recipe-footer">
+        <span>Коптимо з душею</span>
+        <span>Страница ${pageNo}</span>
+      </div>
+    </article>`;
+}
+
+function bookCover(recipeCount){
+  const logoUrl = new URL("appicon.png", location.href).href;
+  const date = printableDate(Date.now());
+
+  return `
+    <section class="cover">
+      <div class="cover-glow"></div>
+      <img class="cover-logo" src="${logoUrl}" alt="Smokehouse">
+      <div class="cover-kicker">SMOKEHOUSE</div>
+      <div class="cover-title">Моя книга<br>рецептов</div>
+      <div class="cover-subtitle">Коптимо з душею</div>
+
+      <div class="cover-info">
+        <div><b>${recipeCount}</b><span>рецептов</span></div>
+        <div><b>${esc(date)}</b><span>дата экспорта</span></div>
+      </div>
+
+      <div class="cover-footer">Smokehouse Recipe Book</div>
+    </section>`;
+}
+
+function openPrintWindow(title, bodyHtml){
+  const w = window.open("","_blank");
+  if(!w){
+    alert("Браузер заблокировал окно печати. Разрешите всплывающие окна для этого сайта.");
+    return;
+  }
+
+  w.document.open();
+  w.document.write(`<!doctype html>
+<html lang="ru"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(title)}</title>
+<style>
+@page{size:A4;margin:0}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#fff;color:#111827;font-family:Arial,Helvetica,sans-serif}
+body{line-height:1.48}
+.cover{
+  position:relative;width:210mm;min-height:297mm;padding:28mm 20mm 22mm;
+  overflow:hidden;page-break-after:always;
+  background:
+    radial-gradient(circle at 85% 5%,rgba(249,115,22,.24),transparent 30%),
+    radial-gradient(circle at 10% 0%,rgba(34,211,238,.20),transparent 34%),
+    linear-gradient(160deg,#111827 0%,#090f16 65%,#05080c 100%);
+  color:#fff;
+}
+.cover-glow{
+  position:absolute;width:95mm;height:95mm;border-radius:50%;
+  right:-30mm;top:-30mm;background:rgba(249,115,22,.10);filter:blur(15mm)
+}
+.cover-logo{
+  width:34mm;height:34mm;object-fit:cover;border-radius:9mm;
+  box-shadow:0 8mm 20mm rgba(0,0,0,.30);margin-bottom:20mm
+}
+.cover-kicker{font-size:11pt;letter-spacing:4px;font-weight:900;color:#67e8f9}
+.cover-title{font-size:36pt;line-height:1.03;font-weight:900;letter-spacing:-1.5px;margin:5mm 0}
+.cover-subtitle{font-size:15pt;color:#cbd5e1;margin-top:5mm}
+.cover-info{
+  position:absolute;left:20mm;right:20mm;bottom:35mm;
+  display:grid;grid-template-columns:1fr 1fr;gap:6mm
+}
+.cover-info div{
+  border:1px solid rgba(255,255,255,.14);border-radius:5mm;
+  padding:6mm;background:rgba(255,255,255,.05)
+}
+.cover-info b{display:block;font-size:15pt;color:#fff;margin-bottom:1mm}
+.cover-info span{display:block;font-size:9pt;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px}
+.cover-footer{position:absolute;left:20mm;bottom:16mm;color:#64748b;font-size:9pt}
+
+.recipe-print{
+  position:relative;width:210mm;min-height:297mm;padding:14mm 16mm 18mm;
+  page-break-after:always;background:#fff
+}
+.recipe-print:last-child{page-break-after:auto}
+.recipe-topline{
+  display:flex;justify-content:space-between;gap:10mm;padding-bottom:4mm;
+  border-bottom:1px solid #d8dee8;font-size:8pt;color:#64748b;
+  font-weight:700;letter-spacing:.8px
+}
+.photo{
+  display:block;width:100%;height:90mm;object-fit:cover;
+  margin:8mm 0 7mm;border-radius:5mm
+}
+.photo-placeholder{
+  width:100%;height:54mm;margin:8mm 0 7mm;border-radius:5mm;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,#111827,#1f2937);
+  color:#67e8f9;font-size:16pt;font-weight:900;letter-spacing:3px
+}
+.recipe-title-wrap{margin-bottom:6mm}
+.eyebrow{
+  font-size:8.5pt;color:#0891b2;font-weight:800;letter-spacing:1px;
+  text-transform:uppercase;margin-bottom:2mm
+}
+h1{font-size:25pt;line-height:1.08;margin:0 0 2mm;color:#0f172a;letter-spacing:-.6px}
+.meta{font-size:8.5pt;color:#94a3b8}
+section{break-inside:auto;margin-top:6mm}
+h3{
+  font-size:12pt;margin:0 0 3mm;padding-bottom:2mm;
+  border-bottom:1.5px solid #cbd5e1;color:#0f172a
+}
+section div{font-size:10.5pt;color:#334155;white-space:normal;word-break:break-word;line-height:1.55}
+.recipe-footer{
+  position:absolute;left:16mm;right:16mm;bottom:8mm;
+  display:flex;justify-content:space-between;border-top:1px solid #e2e8f0;
+  padding-top:3mm;font-size:8pt;color:#94a3b8
+}
+@media print{
+  button{display:none!important}
+  .cover,.recipe-print{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style></head><body>
+${bodyHtml}
+<script>
+(function(){
+  const imgs=[...document.images];
+  const finish=()=>setTimeout(()=>window.print(),350);
+  if(!imgs.length){finish();return;}
+  let left=imgs.length;
+  const done=()=>{left--;if(left<=0)finish();};
+  imgs.forEach(img=>{
+    if(img.complete)done();
+    else{img.onload=done;img.onerror=done;}
+  });
+})();
+<\/script></body></html>`);
+  w.document.close();
+}
+
+async function printRecipePDF(id){
+  const r = await getRecipe(id);
+  if(!r) return;
+
+  const body =
+    bookCover(1) +
+    recipePrintBlock(r,2);
+
+  openPrintWindow(r.name||"Рецепт", body);
+}
+
+async function printAllRecipesPDF(){
+  let recipes = await getAllRecipes();
+  if(!recipes.length){
+    alert("Сначала добавьте хотя бы один рецепт");
+    return;
+  }
+
+  recipes.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+
+  const body =
+    bookCover(recipes.length) +
+    recipes.map((r,i)=>recipePrintBlock(r,i+2)).join("");
+
+  openPrintWindow("Smokehouse — моя книга рецептов", body);
 }
 
 function openRecipeModal(){
