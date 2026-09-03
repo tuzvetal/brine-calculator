@@ -168,6 +168,44 @@ input:focus,select:focus,textarea:focus{
   .grid2,.actions{grid-template-columns:1fr}
   .recipe-actions{grid-template-columns:1fr}
 }
+
+.cloud-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px}
+.cloud-tab{border:1px solid #334155;border-radius:14px;padding:10px;background:#0a1119;color:#94a3b8;font-weight:900}
+.cloud-tab.active{color:#fff;border-color:transparent;background:linear-gradient(135deg,#2563eb,#0891b2)}
+.cloud-status{font-size:12px;color:#94a3b8;margin:8px 0 12px}
+.cloud-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;background:#0a1b24;border:1px solid #164e63;color:#67e8f9;font-size:11px;font-weight:900}
+.cloud-admin-link{margin-top:10px}
+.cloud-card-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.cloud-card-actions button{padding:9px;font-size:12px}
+.admin-grid{display:grid;gap:10px}
+.admin-grid .label{margin-top:4px}
+
+
+
+/* Mobile bottom tabs: always one row */
+.tabs{
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:6px !important;
+  padding:10px 10px calc(10px + env(safe-area-inset-bottom)) !important;
+}
+.tabs .tab{
+  min-width:0 !important;
+  width:100% !important;
+  padding:12px 6px !important;
+  font-size:14px !important;
+  line-height:1.15 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+@media (max-width:430px){
+  .tabs{gap:5px !important;padding-left:8px !important;padding-right:8px !important;}
+  .tabs .tab{font-size:12.5px !important;padding:11px 4px !important;letter-spacing:-0.15px;}
+}
+@media (max-width:360px){
+  .tabs .tab{font-size:11.5px !important;padding-left:2px !important;padding-right:2px !important;}
+}
+
 </style>
 </head>
 
@@ -234,6 +272,9 @@ input:focus,select:focus,textarea:focus{
     <input id="backupFile" type="file" accept=".json,application/json" style="display:none" onchange="importBackup(event)">
 
 
+    
+
+
     <div class="card">
       <div class="section-title">Мои рецепты</div>
       <div class="tip" style="margin-bottom:12px">
@@ -243,11 +284,28 @@ input:focus,select:focus,textarea:focus{
       <div id="recipeList" class="recipe-list"></div>
     </div>
   </section>
+
+  <section id="cloudPage" class="page">
+    <div class="card">
+      <div class="section-title">Общие рецепты</div>
+      <div class="tip">
+        Эти рецепты загружаются из облака. Когда автор добавляет или меняет рецепт,
+        обновление появляется у всех пользователей приложения.
+      </div>
+      <div class="actions" style="margin-top:12px">
+        <button class="btn" onclick="loadCloudRecipes(true)">Обновить общие</button>
+        <button class="btn gray" onclick="openAdminModal()">Админ</button>
+      </div>
+      <div id="cloudStatus" class="cloud-status">Облако не настроено.</div>
+      <div id="cloudRecipeList" class="recipe-list"></div>
+    </div>
+  </section>
 </div>
 
 <nav class="tabs">
   <button id="tabCalculator" class="tab active" onclick="switchPage('calculator')">Калькулятор</button>
-  <button id="tabRecipes" class="tab" onclick="switchPage('recipes')">Рецепты</button>
+  <button id="tabRecipes" class="tab" onclick="switchPage('recipes')">Мои рецепты</button>
+  <button id="tabCloud" class="tab" onclick="switchPage('cloud')" title="Общие рецепты">Общие</button>
 </nav>
 
 <div id="recipeModal" class="modal" onclick="modalBackdrop(event)">
@@ -318,6 +376,64 @@ input:focus,select:focus,textarea:focus{
   </div>
 </div>
 
+
+<div id="adminModal" class="modal" onclick="adminModalBackdrop(event)">
+  <div class="sheet">
+    <div class="sheet-head">
+      <h2>Общие рецепты — админ</h2>
+      <button class="close" onclick="closeAdminModal()">×</button>
+    </div>
+
+    <div id="adminLoginBox">
+      <div class="tip" style="margin:10px 0 12px">
+        Войти может только администратор Supabase. Обычным пользователям вход не нужен.
+      </div>
+      <label class="label">Email</label>
+      <input id="adminEmail" type="email" autocomplete="username" placeholder="admin@example.com">
+      <label class="label">Пароль</label>
+      <input id="adminPassword" type="password" autocomplete="current-password" placeholder="Пароль">
+      <div class="actions">
+        <button class="btn green" onclick="cloudAdminLogin()">Войти</button>
+        <button class="btn gray" onclick="closeAdminModal()">Отмена</button>
+      </div>
+    </div>
+
+    <div id="adminEditorBox" style="display:none">
+      <input id="cloudEditId" type="hidden">
+
+      <label class="label">Название</label>
+      <input id="cloudName" placeholder="Например, грудинка горячего копчения">
+
+      <label class="label">Категория</label>
+      <select id="cloudCategory">
+        <option>Мясо</option>
+        <option>Рыба</option>
+        <option>Птица</option>
+        <option>Колбасы</option>
+        <option>Сало / подчеревок</option>
+        <option>Рассолы</option>
+        <option>Другое</option>
+      </select>
+
+      <label class="label">Фото</label>
+      <input id="cloudPhoto" type="file" accept="image/*">
+
+      <label class="label">Ингредиенты</label>
+      <textarea id="cloudIngredients" placeholder="Ингредиенты..."></textarea>
+
+      <label class="label">Приготовление</label>
+      <textarea id="cloudPreparation" placeholder="Этапы приготовления..."></textarea>
+
+      <div class="actions">
+        <button class="btn green" onclick="saveCloudRecipe()">Опубликовать</button>
+        <button class="btn gray" onclick="resetCloudEditor()">Новый</button>
+      </div>
+      <button class="btn red" style="margin-top:10px" onclick="cloudAdminLogout()">Выйти из админки</button>
+    </div>
+  </div>
+</div>
+
+<script src="cloud_config.js"></script>
 <script>
 let unit = localStorage.getItem("unit") || "kg";
 let savedKg = localStorage.getItem("kg") || "1";
@@ -328,11 +444,19 @@ setUnit(unit);
 
 function switchPage(page){
   const calc = page === "calculator";
-  document.getElementById("calculatorPage").classList.toggle("active",calc);
-  document.getElementById("recipesPage").classList.toggle("active",!calc);
-  document.getElementById("tabCalculator").classList.toggle("active",calc);
-  document.getElementById("tabRecipes").classList.toggle("active",!calc);
-  if(!calc) renderRecipes();
+  const mine = page === "recipes";
+  const cloud = page === "cloud";
+
+  document.getElementById("calculatorPage").classList.toggle("active", calc);
+  document.getElementById("recipesPage").classList.toggle("active", mine);
+  document.getElementById("cloudPage").classList.toggle("active", cloud);
+
+  document.getElementById("tabCalculator").classList.toggle("active", calc);
+  document.getElementById("tabRecipes").classList.toggle("active", mine);
+  document.getElementById("tabCloud").classList.toggle("active", cloud);
+
+  if(mine) renderRecipes();
+  if(cloud) loadCloudRecipes(false);
 }
 
 function setUnit(u){
@@ -892,6 +1016,323 @@ async function importBackup(event){
     event.target.value = "";
   }
 }
+
+
+
+// -------------------- CLOUD RECIPES / SUPABASE --------------------
+let cloudRecipes = [];
+let cloudAccessToken = sessionStorage.getItem("smokehouse_cloud_token") || "";
+
+function cloudCfg(){
+  return window.SMOKEHOUSE_CLOUD || {};
+}
+
+function cloudReady(){
+  const c = cloudCfg();
+  return !!(c.SUPABASE_URL && c.SUPABASE_ANON_KEY);
+}
+
+function cloudBase(){
+  return (cloudCfg().SUPABASE_URL || "").replace(/\/+$/,"");
+}
+
+function cloudHeaders(auth=false){
+  const c = cloudCfg();
+  const token = auth && cloudAccessToken ? cloudAccessToken : c.SUPABASE_ANON_KEY;
+  return {
+    "apikey": c.SUPABASE_ANON_KEY || "",
+    "Authorization": "Bearer " + (token || ""),
+    "Content-Type": "application/json"
+  };
+}
+
+function setCloudStatus(msg){
+  const el = document.getElementById("cloudStatus");
+  if(el) el.textContent = msg;
+}
+
+function escCloud(s){
+  return String(s ?? "").replace(/[&<>"']/g, ch => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[ch]);
+}
+
+async function loadCloudRecipes(force=false){
+  const list = document.getElementById("cloudRecipeList");
+  if(!list) return;
+
+  if(!cloudReady()){
+    setCloudStatus("Облако ещё не настроено. Заполни cloud_config.js.");
+    const cached = localStorage.getItem("smokehouse_cloud_cache");
+    if(cached){
+      try{
+        cloudRecipes = JSON.parse(cached);
+        renderCloudRecipes();
+        setCloudStatus("Показана сохранённая копия общих рецептов.");
+      }catch(e){}
+    }
+    return;
+  }
+
+  setCloudStatus("Загружаю общие рецепты...");
+  try{
+    const url = cloudBase() + "/rest/v1/public_recipes?select=*&order=updated_at.desc";
+    const r = await fetch(url, {headers: cloudHeaders(false), cache: force ? "no-store" : "default"});
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    cloudRecipes = await r.json();
+    localStorage.setItem("smokehouse_cloud_cache", JSON.stringify(cloudRecipes));
+    renderCloudRecipes();
+    setCloudStatus("Общие рецепты обновлены: " + cloudRecipes.length);
+  }catch(e){
+    const cached = localStorage.getItem("smokehouse_cloud_cache");
+    if(cached){
+      try{
+        cloudRecipes = JSON.parse(cached);
+        renderCloudRecipes();
+        setCloudStatus("Нет связи с облаком. Показана последняя сохранённая копия.");
+        return;
+      }catch(_){}
+    }
+    setCloudStatus("Не удалось загрузить общие рецепты: " + e.message);
+  }
+}
+
+function renderCloudRecipes(){
+  const list = document.getElementById("cloudRecipeList");
+  if(!list) return;
+  if(!cloudRecipes.length){
+    list.innerHTML = '<div class="empty">Пока нет опубликованных рецептов.</div>';
+    return;
+  }
+
+  list.innerHTML = cloudRecipes.map(r => `
+    <article class="recipe-card" id="cloud-${escCloud(r.id)}">
+      ${r.photo_url
+        ? `<img class="recipe-image" src="${escCloud(r.photo_url)}" alt="${escCloud(r.name)}">`
+        : `<div class="recipe-placeholder">ОБЩИЙ РЕЦЕПТ</div>`}
+      <div class="recipe-body">
+        <div class="recipe-title">${escCloud(r.name)}</div>
+        <div class="recipe-meta"><span class="cloud-badge">🌐 общий</span> ${escCloud(r.category || "")}</div>
+        <div class="recipe-text"><b>Ингредиенты</b><br>${escCloud(r.ingredients || "").replace(/\n/g,"<br>")}
+        <br><br><b>Приготовление</b><br>${escCloud(r.preparation || "").replace(/\n/g,"<br>")}</div>
+        <div class="recipe-actions">
+          <button class="btn gray" onclick="toggleCloudRecipe('${escCloud(r.id)}')">Подробнее</button>
+          <button class="btn" onclick="copyCloudRecipeToMine('${escCloud(r.id)}')">Сохранить себе</button>
+        </div>
+        ${cloudAccessToken ? `<div class="cloud-card-actions">
+          <button class="btn orange" onclick="editCloudRecipe('${escCloud(r.id)}')">Редактировать</button>
+          <button class="btn red" onclick="deleteCloudRecipe('${escCloud(r.id)}')">Удалить</button>
+        </div>` : ""}
+      </div>
+    </article>
+  `).join("");
+}
+
+function toggleCloudRecipe(id){
+  const el = document.getElementById("cloud-"+id);
+  if(el) el.classList.toggle("open");
+}
+
+async function copyCloudRecipeToMine(id){
+  const r = cloudRecipes.find(x => String(x.id) === String(id));
+  if(!r) return;
+  try{
+    const db = await getDB();
+    await new Promise((resolve,reject)=>{
+      const tx = db.transaction(STORE,"readwrite");
+      tx.objectStore(STORE).add({
+        name: r.name || "Рецепт",
+        category: r.category || "Другое",
+        ingredients: r.ingredients || "",
+        steps: r.preparation || "",
+        photo: r.photo_url || "",
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      });
+      tx.oncomplete=resolve;
+      tx.onerror=()=>reject(tx.error);
+    });
+    alert("Рецепт сохранён в «Мои рецепты»");
+    renderRecipes();
+  }catch(e){
+    alert("Не удалось сохранить рецепт: " + e);
+  }
+}
+
+function openAdminModal(){
+  document.getElementById("adminModal").classList.add("show");
+  const logged = !!cloudAccessToken;
+  document.getElementById("adminLoginBox").style.display = logged ? "none" : "block";
+  document.getElementById("adminEditorBox").style.display = logged ? "block" : "none";
+}
+
+function closeAdminModal(){
+  document.getElementById("adminModal").classList.remove("show");
+}
+
+function adminModalBackdrop(e){
+  if(e.target && e.target.id === "adminModal") closeAdminModal();
+}
+
+async function cloudAdminLogin(){
+  if(!cloudReady()){
+    alert("Сначала настрой cloud_config.js");
+    return;
+  }
+  const email = document.getElementById("adminEmail").value.trim();
+  const password = document.getElementById("adminPassword").value;
+  if(!email || !password){
+    alert("Введите email и пароль");
+    return;
+  }
+  try{
+    const r = await fetch(cloudBase()+"/auth/v1/token?grant_type=password",{
+      method:"POST",
+      headers:{
+        "apikey": cloudCfg().SUPABASE_ANON_KEY,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({email,password})
+    });
+    const data = await r.json();
+    if(!r.ok) throw new Error(data.error_description || data.msg || "Ошибка входа");
+    cloudAccessToken = data.access_token;
+    sessionStorage.setItem("smokehouse_cloud_token", cloudAccessToken);
+    document.getElementById("adminLoginBox").style.display="none";
+    document.getElementById("adminEditorBox").style.display="block";
+    renderCloudRecipes();
+  }catch(e){
+    alert("Не удалось войти: "+e.message);
+  }
+}
+
+function cloudAdminLogout(){
+  cloudAccessToken="";
+  sessionStorage.removeItem("smokehouse_cloud_token");
+  resetCloudEditor();
+  document.getElementById("adminLoginBox").style.display="block";
+  document.getElementById("adminEditorBox").style.display="none";
+  renderCloudRecipes();
+}
+
+function resetCloudEditor(){
+  document.getElementById("cloudEditId").value="";
+  document.getElementById("cloudName").value="";
+  document.getElementById("cloudIngredients").value="";
+  document.getElementById("cloudPreparation").value="";
+  document.getElementById("cloudPhoto").value="";
+}
+
+function editCloudRecipe(id){
+  const r = cloudRecipes.find(x => String(x.id) === String(id));
+  if(!r) return;
+  openAdminModal();
+  document.getElementById("cloudEditId").value=r.id;
+  document.getElementById("cloudName").value=r.name || "";
+  document.getElementById("cloudCategory").value=r.category || "Другое";
+  document.getElementById("cloudIngredients").value=r.ingredients || "";
+  document.getElementById("cloudPreparation").value=r.preparation || "";
+  document.getElementById("cloudPhoto").value="";
+}
+
+async function uploadCloudPhoto(file){
+  if(!file) return "";
+  const ext = (file.name.split(".").pop() || "jpg").replace(/[^a-zA-Z0-9]/g,"");
+  const path = Date.now()+"_"+Math.random().toString(36).slice(2,10)+"."+ext;
+  const bucket = cloudCfg().BUCKET || "recipe-photos";
+  const r = await fetch(cloudBase()+"/storage/v1/object/"+bucket+"/"+path,{
+    method:"POST",
+    headers:{
+      "apikey": cloudCfg().SUPABASE_ANON_KEY,
+      "Authorization":"Bearer "+cloudAccessToken,
+      "Content-Type":file.type || "application/octet-stream",
+      "x-upsert":"false"
+    },
+    body:file
+  });
+  if(!r.ok){
+    let msg="HTTP "+r.status;
+    try{ const d=await r.json(); msg=d.message||d.error||msg; }catch(_){}
+    throw new Error("Фото: "+msg);
+  }
+  return cloudBase()+"/storage/v1/object/public/"+bucket+"/"+path;
+}
+
+async function saveCloudRecipe(){
+  if(!cloudAccessToken){
+    alert("Сначала войдите как администратор");
+    return;
+  }
+  const id = document.getElementById("cloudEditId").value.trim();
+  const name = document.getElementById("cloudName").value.trim();
+  const category = document.getElementById("cloudCategory").value;
+  const ingredients = document.getElementById("cloudIngredients").value.trim();
+  const preparation = document.getElementById("cloudPreparation").value.trim();
+  const photoFile = document.getElementById("cloudPhoto").files[0];
+
+  if(!name){
+    alert("Введите название");
+    return;
+  }
+
+  try{
+    let photo_url = "";
+    if(photoFile) photo_url = await uploadCloudPhoto(photoFile);
+
+    const body = {name, category, ingredients, preparation, updated_at:new Date().toISOString()};
+    if(photo_url) body.photo_url = photo_url;
+
+    let url = cloudBase()+"/rest/v1/public_recipes";
+    let method = "POST";
+    if(id){
+      url += "?id=eq."+encodeURIComponent(id);
+      method = "PATCH";
+    }
+
+    const r = await fetch(url,{
+      method,
+      headers:{
+        ...cloudHeaders(true),
+        "Prefer":"return=minimal"
+      },
+      body:JSON.stringify(body)
+    });
+
+    if(!r.ok){
+      let msg="HTTP "+r.status;
+      try{ const d=await r.json(); msg=d.message||d.details||d.hint||msg; }catch(_){}
+      throw new Error(msg);
+    }
+
+    resetCloudEditor();
+    closeAdminModal();
+    await loadCloudRecipes(true);
+    alert(id ? "Общий рецепт обновлён" : "Общий рецепт опубликован");
+  }catch(e){
+    alert("Ошибка публикации: "+e.message);
+  }
+}
+
+async function deleteCloudRecipe(id){
+  if(!cloudAccessToken) return;
+  if(!confirm("Удалить этот общий рецепт у всех пользователей?")) return;
+  try{
+    const r = await fetch(cloudBase()+"/rest/v1/public_recipes?id=eq."+encodeURIComponent(id),{
+      method:"DELETE",
+      headers:{
+        ...cloudHeaders(true),
+        "Prefer":"return=minimal"
+      }
+    });
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    await loadCloudRecipes(true);
+  }catch(e){
+    alert("Не удалось удалить: "+e.message);
+  }
+}
+
+setTimeout(()=>loadCloudRecipes(false), 350);
+// ------------------ END CLOUD RECIPES / SUPABASE ------------------
 
 </script>
 </body>
