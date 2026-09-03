@@ -206,6 +206,69 @@ input:focus,select:focus,textarea:focus{
   .tabs .tab{font-size:11.5px !important;padding-left:2px !important;padding-right:2px !important;}
 }
 
+
+/* Pretty bottom navigation */
+.pretty-tabs{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:8px !important;
+  padding:9px 10px calc(9px + env(safe-area-inset-bottom)) !important;
+  border-top:1px solid rgba(148,163,184,.12);
+  background:linear-gradient(180deg,rgba(10,17,25,.94),rgba(6,8,12,.99)) !important;
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+}
+.pretty-tabs .tab{
+  position:relative;
+  min-width:0 !important;
+  width:100% !important;
+  height:58px;
+  padding:6px 4px !important;
+  border:1px solid rgba(71,85,105,.55) !important;
+  border-radius:17px !important;
+  background:linear-gradient(180deg,rgba(30,41,59,.80),rgba(15,23,42,.94)) !important;
+  color:#94a3b8 !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 5px 14px rgba(0,0,0,.18);
+  display:flex !important;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  overflow:hidden;
+}
+.pretty-tabs .tab::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background:linear-gradient(135deg,#2563eb 0%,#0ea5e9 55%,#06b6d4 100%);
+  opacity:0;
+}
+.pretty-tabs .tab>*{position:relative;z-index:1}
+.pretty-tabs .tab.active{
+  color:#fff !important;
+  border-color:rgba(103,232,249,.40) !important;
+  box-shadow:0 8px 22px rgba(14,165,233,.24),inset 0 1px 0 rgba(255,255,255,.14);
+  transform:translateY(-1px);
+}
+.pretty-tabs .tab.active::before{opacity:1}
+.pretty-tabs .tab-icon{font-size:20px;line-height:1}
+.pretty-tabs .tab-label{
+  max-width:100%;
+  font-size:12.5px;
+  line-height:1.1;
+  font-weight:900;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.pretty-tabs .tab:active{transform:scale(.97)}
+@media (max-width:380px){
+  .pretty-tabs{gap:6px !important;padding-left:7px !important;padding-right:7px !important}
+  .pretty-tabs .tab{height:55px;border-radius:15px !important}
+  .pretty-tabs .tab-icon{font-size:18px}
+  .pretty-tabs .tab-label{font-size:11.5px}
+}
 </style>
 </head>
 
@@ -302,10 +365,19 @@ input:focus,select:focus,textarea:focus{
   </section>
 </div>
 
-<nav class="tabs">
-  <button id="tabCalculator" class="tab active" onclick="switchPage('calculator')">Калькулятор</button>
-  <button id="tabRecipes" class="tab" onclick="switchPage('recipes')">Мои рецепты</button>
-  <button id="tabCloud" class="tab" onclick="switchPage('cloud')" title="Общие рецепты">Общие</button>
+<nav class="tabs pretty-tabs" aria-label="Навигация приложения">
+  <button id="tabCalculator" class="tab active" onclick="switchPage('calculator')" title="Калькулятор">
+    <span class="tab-icon">🧮</span>
+    <span class="tab-label">Калькулятор</span>
+  </button>
+  <button id="tabRecipes" class="tab" onclick="switchPage('recipes')" title="Мои рецепты">
+    <span class="tab-icon">📖</span>
+    <span class="tab-label">Мои</span>
+  </button>
+  <button id="tabCloud" class="tab" onclick="switchPage('cloud')" title="Общие рецепты">
+    <span class="tab-icon">🌐</span>
+    <span class="tab-label">Общие</span>
+  </button>
 </nav>
 
 <div id="recipeModal" class="modal" onclick="modalBackdrop(event)">
