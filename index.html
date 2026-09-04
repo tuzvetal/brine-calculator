@@ -1162,7 +1162,9 @@ async function saveCalculatedAsRecipe(){
 }
 
 if(location.protocol !== "file:" && "serviceWorker" in navigator){
-  navigator.serviceWorker.register("sw.js");
+  navigator.serviceWorker.register("sw.js", {updateViaCache:"none"})
+    .then(reg => reg.update())
+    .catch(()=>{});
 }
 
 getDB().catch(console.error);
@@ -1311,23 +1313,34 @@ async function loadCloudRecipes(force=false){
   setCloudStatus(force ? "Обновляю общие рецепты..." : "Загружаю общие рецепты...");
   try{
     const url = cloudBase() + "/rest/v1/public_recipes?select=*&order=updated_at.desc";
-    const r = await fetch(url, {headers: {...cloudHeaders(false), "Cache-Control":"no-cache", "Pragma":"no-cache"}, cache: "no-store"});
+    const r = await fetch(url, {
+      method: "GET",
+      headers: {
+        ...cloudHeaders(false),
+        "Accept": "application/json",
+        "Cache-Control": "no-cache, no-store, max-age=0",
+        "Pragma": "no-cache"
+      },
+      cache: "no-store"
+    });
     if(!r.ok) throw new Error("HTTP " + r.status);
     cloudRecipes = await r.json();
     localStorage.setItem("smokehouse_cloud_cache", JSON.stringify(cloudRecipes));
     renderCloudRecipes();
     setCloudStatus("Общие рецепты обновлены: " + cloudRecipes.length);
   }catch(e){
-    const cached = localStorage.getItem("smokehouse_cloud_cache");
-    if(cached){
-      try{
-        cloudRecipes = JSON.parse(cached);
-        renderCloudRecipes();
-        setCloudStatus("Нет связи с облаком. Показана последняя сохранённая копия.");
-        return;
-      }catch(_){}
+    if(!force){
+      const cached = localStorage.getItem("smokehouse_cloud_cache");
+      if(cached){
+        try{
+          cloudRecipes = JSON.parse(cached);
+          renderCloudRecipes();
+          setCloudStatus("Нет связи с облаком. Показана последняя сохранённая копия.");
+          return;
+        }catch(_){}
+      }
     }
-    setCloudStatus("Не удалось загрузить общие рецепты: " + e.message);
+    setCloudStatus("Не удалось обновить общие рецепты: " + e.message);
   }
 }
 
