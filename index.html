@@ -417,7 +417,7 @@ input:focus,select:focus,textarea:focus{
   align-items:center;
   gap:10px;
   margin:10px 0 12px;
-  color:#bfc5cc;
+  color:#c7c9c2;
   font-size:14px;
 }
 .remember-row input{
@@ -623,8 +623,8 @@ input:focus,select:focus,textarea:focus{
       <label class="label">Пароль</label>
       <input id="adminPassword" type="password" autocomplete="current-password" placeholder="Пароль">
       <label class="remember-row">
-        <input id="adminRemember" type="checkbox" checked>
-        <span>Запомнить вход на этом устройстве</span>
+        <input id="adminRememberCredentials" type="checkbox" checked>
+        <span>Сохранить логин и пароль на этом устройстве</span>
       </label>
       <div class="actions">
         <button class="btn green" onclick="cloudAdminLogin()">Войти</button>
@@ -1255,12 +1255,7 @@ async function importBackup(event){
 
 // -------------------- CLOUD RECIPES / SUPABASE --------------------
 let cloudRecipes = [];
-let cloudAccessToken =
-  localStorage.getItem("smokehouse_cloud_token") ||
-  sessionStorage.getItem("smokehouse_cloud_token") || "";
-let cloudRefreshToken =
-  localStorage.getItem("smokehouse_cloud_refresh") ||
-  sessionStorage.getItem("smokehouse_cloud_refresh") || "";
+let cloudAccessToken = sessionStorage.getItem("smokehouse_cloud_token") || "";
 
 function cloudCfg(){
   return window.SMOKEHOUSE_CLOUD || {};
@@ -1313,10 +1308,10 @@ async function loadCloudRecipes(force=false){
     return;
   }
 
-  setCloudStatus("Загружаю общие рецепты...");
+  setCloudStatus(force ? "Обновляю общие рецепты..." : "Загружаю общие рецепты...");
   try{
     const url = cloudBase() + "/rest/v1/public_recipes?select=*&order=updated_at.desc";
-    const r = await fetch(url, {headers: cloudHeaders(false), cache: force ? "no-store" : "default"});
+    const r = await fetch(url, {headers: {...cloudHeaders(false), "Cache-Control":"no-cache", "Pragma":"no-cache"}, cache: "no-store"});
     if(!r.ok) throw new Error("HTTP " + r.status);
     cloudRecipes = await r.json();
     localStorage.setItem("smokehouse_cloud_cache", JSON.stringify(cloudRecipes));
@@ -1398,17 +1393,9 @@ async function copyCloudRecipeToMine(id){
   }
 }
 
-async function openAdminModal(){
+function openAdminModal(){
+  loadSavedAdminCredentials();
   document.getElementById("adminModal").classList.add("show");
-
-  const savedEmail = localStorage.getItem("smokehouse_admin_email") || "";
-  const emailInput = document.getElementById("adminEmail");
-  if(emailInput && !emailInput.value) emailInput.value = savedEmail;
-
-  if(!cloudAccessToken && cloudRefreshToken){
-    await refreshCloudSession();
-  }
-
   const logged = !!cloudAccessToken;
   document.getElementById("adminLoginBox").style.display = logged ? "none" : "block";
   document.getElementById("adminEditorBox").style.display = logged ? "block" : "none";
@@ -1422,46 +1409,32 @@ function adminModalBackdrop(e){
   if(e.target && e.target.id === "adminModal") closeAdminModal();
 }
 
-function storeCloudSession(data, remember){
-  cloudAccessToken = data.access_token || "";
-  cloudRefreshToken = data.refresh_token || "";
 
-  localStorage.removeItem("smokehouse_cloud_token");
-  localStorage.removeItem("smokehouse_cloud_refresh");
-  sessionStorage.removeItem("smokehouse_cloud_token");
-  sessionStorage.removeItem("smokehouse_cloud_refresh");
-
-  const store = remember ? localStorage : sessionStorage;
-  if(cloudAccessToken) store.setItem("smokehouse_cloud_token", cloudAccessToken);
-  if(cloudRefreshToken) store.setItem("smokehouse_cloud_refresh", cloudRefreshToken);
+function loadSavedAdminCredentials(){
+  try{
+    const email = localStorage.getItem("smokehouse_admin_email") || "";
+    const password = localStorage.getItem("smokehouse_admin_password") || "";
+    const emailEl = document.getElementById("adminEmail");
+    const passEl = document.getElementById("adminPassword");
+    const rememberEl = document.getElementById("adminRememberCredentials");
+    if(emailEl) emailEl.value = email;
+    if(passEl) passEl.value = password;
+    if(rememberEl) rememberEl.checked = !!(email || password);
+  }catch(e){}
 }
 
-async function refreshCloudSession(){
-  if(!cloudRefreshToken || !cloudReady()) return false;
+function saveAdminCredentials(email,password){
   try{
-    const r = await fetch(cloudBase()+"/auth/v1/token?grant_type=refresh_token",{
-      method:"POST",
-      headers:{
-        "apikey": cloudCfg().SUPABASE_ANON_KEY,
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify({refresh_token:cloudRefreshToken})
-    });
-    const data = await r.json();
-    if(!r.ok) throw new Error(data.error_description || data.msg || "Не удалось обновить вход");
-
-    const remember = !!localStorage.getItem("smokehouse_cloud_refresh");
-    storeCloudSession(data, remember);
-    return true;
-  }catch(e){
-    cloudAccessToken="";
-    cloudRefreshToken="";
-    localStorage.removeItem("smokehouse_cloud_token");
-    localStorage.removeItem("smokehouse_cloud_refresh");
-    sessionStorage.removeItem("smokehouse_cloud_token");
-    sessionStorage.removeItem("smokehouse_cloud_refresh");
-    return false;
-  }
+    const rememberEl = document.getElementById("adminRememberCredentials");
+    const remember = rememberEl ? rememberEl.checked : true;
+    if(remember){
+      localStorage.setItem("smokehouse_admin_email", email || "");
+      localStorage.setItem("smokehouse_admin_password", password || "");
+    }else{
+      localStorage.removeItem("smokehouse_admin_email");
+      localStorage.removeItem("smokehouse_admin_password");
+    }
+  }catch(e){}
 }
 
 async function cloudAdminLogin(){
@@ -1469,16 +1442,12 @@ async function cloudAdminLogin(){
     alert("Сначала настрой cloud_config.js");
     return;
   }
-
   const email = document.getElementById("adminEmail").value.trim();
   const password = document.getElementById("adminPassword").value;
-  const remember = document.getElementById("adminRemember")?.checked !== false;
-
   if(!email || !password){
     alert("Введите email и пароль");
     return;
   }
-
   try{
     const r = await fetch(cloudBase()+"/auth/v1/token?grant_type=password",{
       method:"POST",
@@ -1488,23 +1457,14 @@ async function cloudAdminLogin(){
       },
       body:JSON.stringify({email,password})
     });
-
     const data = await r.json();
     if(!r.ok) throw new Error(data.error_description || data.msg || "Ошибка входа");
-
-    storeCloudSession(data, remember);
-
-    if(remember){
-      localStorage.setItem("smokehouse_admin_email", email);
-    }else{
-      localStorage.removeItem("smokehouse_admin_email");
-    }
-
-    document.getElementById("adminPassword").value = "";
+    cloudAccessToken = data.access_token;
+    sessionStorage.setItem("smokehouse_cloud_token", cloudAccessToken);
+    saveAdminCredentials(email,password);
     document.getElementById("adminLoginBox").style.display="none";
     document.getElementById("adminEditorBox").style.display="block";
     renderCloudRecipes();
-
   }catch(e){
     alert("Не удалось войти: "+e.message);
   }
@@ -1512,11 +1472,7 @@ async function cloudAdminLogin(){
 
 function cloudAdminLogout(){
   cloudAccessToken="";
-  cloudRefreshToken="";
-  localStorage.removeItem("smokehouse_cloud_token");
-  localStorage.removeItem("smokehouse_cloud_refresh");
   sessionStorage.removeItem("smokehouse_cloud_token");
-  sessionStorage.removeItem("smokehouse_cloud_refresh");
   resetCloudEditor();
   document.getElementById("adminLoginBox").style.display="block";
   document.getElementById("adminEditorBox").style.display="none";
@@ -1545,7 +1501,6 @@ function editCloudRecipe(id){
 
 async function uploadCloudPhoto(file){
   if(!file) return "";
-  if(!cloudAccessToken && cloudRefreshToken) await refreshCloudSession();
   const ext = (file.name.split(".").pop() || "jpg").replace(/[^a-zA-Z0-9]/g,"");
   const path = Date.now()+"_"+Math.random().toString(36).slice(2,10)+"."+ext;
   const bucket = cloudCfg().BUCKET || "recipe-photos";
@@ -1568,7 +1523,6 @@ async function uploadCloudPhoto(file){
 }
 
 async function saveCloudRecipe(){
-  if(!cloudAccessToken && cloudRefreshToken) await refreshCloudSession();
   if(!cloudAccessToken){
     alert("Сначала войдите как администратор");
     return;
@@ -1624,7 +1578,6 @@ async function saveCloudRecipe(){
 }
 
 async function deleteCloudRecipe(id){
-  if(!cloudAccessToken && cloudRefreshToken) await refreshCloudSession();
   if(!cloudAccessToken) return;
   if(!confirm("Удалить этот общий рецепт у всех пользователей?")) return;
   try{
@@ -1645,6 +1598,8 @@ async function deleteCloudRecipe(id){
 setTimeout(()=>loadCloudRecipes(false), 350);
 // ------------------ END CLOUD RECIPES / SUPABASE ------------------
 
+
+setTimeout(loadSavedAdminCredentials, 100);
 </script>
 </body>
 </html>
