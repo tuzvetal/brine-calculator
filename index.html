@@ -269,6 +269,164 @@ input:focus,select:focus,textarea:focus{
   .pretty-tabs .tab-icon{font-size:18px}
   .pretty-tabs .tab-label{font-size:11.5px}
 }
+
+
+/* Smokehouse Carbon Gold theme */
+:root{
+  --gold:#b69a57;
+  --gold2:#d0b56d;
+  --carbon1:#11151a;
+  --carbon2:#0a0d11;
+}
+
+body{
+  background:
+    radial-gradient(circle at 20% 0%, rgba(182,154,87,.06), transparent 28%),
+    linear-gradient(180deg,#07090c 0%,#0a0d11 100%) !important;
+}
+
+.card,.recipe-card,.sheet{
+  border:1px solid rgba(182,154,87,.22) !important;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.015) 25%,transparent 25%) 0 0/10px 10px,
+    linear-gradient(315deg,rgba(255,255,255,.012) 25%,transparent 25%) 0 0/10px 10px,
+    linear-gradient(180deg,#11161c,#0c1116) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 10px 28px rgba(0,0,0,.22) !important;
+}
+
+.section-title,.recipe-title,.brand{
+  color:#d7c18b !important;
+}
+
+.btn,.pretty-tabs .tab{
+  border:1px solid rgba(182,154,87,.52) !important;
+  color:#f2f0e8 !important;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.025) 25%,transparent 25%) 0 0/8px 8px,
+    linear-gradient(315deg,rgba(255,255,255,.018) 25%,transparent 25%) 0 0/8px 8px,
+    linear-gradient(180deg,#1a1f25 0%,#0e1217 100%) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 5px 14px rgba(0,0,0,.22) !important;
+  text-shadow:0 1px 0 #000;
+}
+
+.btn:focus-visible{
+  border-color:rgba(208,181,109,.78) !important;
+  box-shadow:0 0 0 2px rgba(182,154,87,.08),0 7px 18px rgba(0,0,0,.28) !important;
+}
+
+.btn:active,.pretty-tabs .tab:active{
+  transform:translateY(1px) scale(.985) !important;
+}
+
+.btn.green,.btn.orange,.btn.gray{
+  border-color:rgba(182,154,87,.52) !important;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.025) 25%,transparent 25%) 0 0/8px 8px,
+    linear-gradient(315deg,rgba(255,255,255,.018) 25%,transparent 25%) 0 0/8px 8px,
+    linear-gradient(180deg,#1a1f25,#0e1217) !important;
+  color:#f3efe3 !important;
+}
+
+.btn.red{
+  border-color:rgba(189,72,55,.65) !important;
+  background:linear-gradient(180deg,#2a1513,#170b0a) !important;
+  color:#ffd8d1 !important;
+}
+
+.pretty-tabs{
+  border-top:1px solid rgba(182,154,87,.20) !important;
+  background:linear-gradient(180deg,rgba(8,11,14,.97),rgba(5,7,9,.995)) !important;
+}
+
+.pretty-tabs .tab::before{
+  background:linear-gradient(135deg,rgba(182,154,87,.20),rgba(208,181,109,.08)) !important;
+}
+
+.pretty-tabs .tab.active{
+  border-color:rgba(208,181,109,.88) !important;
+  color:#fff7df !important;
+  box-shadow:0 0 0 1px rgba(182,154,87,.14),0 6px 18px rgba(0,0,0,.28),inset 0 0 18px rgba(182,154,87,.08) !important;
+}
+
+input,select,textarea{
+  border:1px solid rgba(182,154,87,.24) !important;
+  background:#0a0f14 !important;
+  color:#eef0f2 !important;
+}
+
+input:focus,select:focus,textarea:focus{
+  border-color:rgba(208,181,109,.68) !important;
+  box-shadow:0 0 0 2px rgba(182,154,87,.08) !important;
+}
+
+.recipe-meta,.tip,.label,.subtitle,.cloud-status{
+  color:#9ca4ad !important;
+}
+
+.cloud-badge{
+  border-color:rgba(182,154,87,.40) !important;
+  background:#15130d !important;
+  color:#d8c58f !important;
+}
+
+.title{
+  color:#f6f3ea !important;
+}
+
+.result{
+  border:1px solid rgba(182,154,87,.18) !important;
+  background:linear-gradient(180deg,#0f1419,#0b0f13) !important;
+}
+
+@media (max-width:430px){
+  .btn{min-height:48px;border-radius:14px !important;}
+}
+
+
+
+/* Fix: keep content visible above bottom navigation */
+.page{
+  padding-bottom:120px !important;
+}
+#calculatorPage .card:last-child{
+  margin-bottom:18px !important;
+}
+#calculatorPage .card:last-child .tip{
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  max-height:none !important;
+  overflow:visible !important;
+  color:#aeb5bd !important;
+  line-height:1.5 !important;
+  margin-top:8px !important;
+}
+@media (max-width:430px){
+  .page{
+    padding-bottom:132px !important;
+  }
+  #calculatorPage .card:last-child{
+    padding-bottom:18px !important;
+  }
+}
+
+
+
+.remember-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:10px 0 12px;
+  color:#bfc5cc;
+  font-size:14px;
+}
+.remember-row input{
+  width:20px !important;
+  height:20px !important;
+  min-width:20px;
+  accent-color:#b69a57;
+}
+
 </style>
 </head>
 
@@ -464,6 +622,10 @@ input:focus,select:focus,textarea:focus{
       <input id="adminEmail" type="email" autocomplete="username" placeholder="admin@example.com">
       <label class="label">Пароль</label>
       <input id="adminPassword" type="password" autocomplete="current-password" placeholder="Пароль">
+      <label class="remember-row">
+        <input id="adminRemember" type="checkbox" checked>
+        <span>Запомнить вход на этом устройстве</span>
+      </label>
       <div class="actions">
         <button class="btn green" onclick="cloudAdminLogin()">Войти</button>
         <button class="btn gray" onclick="closeAdminModal()">Отмена</button>
@@ -1093,7 +1255,12 @@ async function importBackup(event){
 
 // -------------------- CLOUD RECIPES / SUPABASE --------------------
 let cloudRecipes = [];
-let cloudAccessToken = sessionStorage.getItem("smokehouse_cloud_token") || "";
+let cloudAccessToken =
+  localStorage.getItem("smokehouse_cloud_token") ||
+  sessionStorage.getItem("smokehouse_cloud_token") || "";
+let cloudRefreshToken =
+  localStorage.getItem("smokehouse_cloud_refresh") ||
+  sessionStorage.getItem("smokehouse_cloud_refresh") || "";
 
 function cloudCfg(){
   return window.SMOKEHOUSE_CLOUD || {};
@@ -1231,8 +1398,17 @@ async function copyCloudRecipeToMine(id){
   }
 }
 
-function openAdminModal(){
+async function openAdminModal(){
   document.getElementById("adminModal").classList.add("show");
+
+  const savedEmail = localStorage.getItem("smokehouse_admin_email") || "";
+  const emailInput = document.getElementById("adminEmail");
+  if(emailInput && !emailInput.value) emailInput.value = savedEmail;
+
+  if(!cloudAccessToken && cloudRefreshToken){
+    await refreshCloudSession();
+  }
+
   const logged = !!cloudAccessToken;
   document.getElementById("adminLoginBox").style.display = logged ? "none" : "block";
   document.getElementById("adminEditorBox").style.display = logged ? "block" : "none";
@@ -1246,17 +1422,63 @@ function adminModalBackdrop(e){
   if(e.target && e.target.id === "adminModal") closeAdminModal();
 }
 
+function storeCloudSession(data, remember){
+  cloudAccessToken = data.access_token || "";
+  cloudRefreshToken = data.refresh_token || "";
+
+  localStorage.removeItem("smokehouse_cloud_token");
+  localStorage.removeItem("smokehouse_cloud_refresh");
+  sessionStorage.removeItem("smokehouse_cloud_token");
+  sessionStorage.removeItem("smokehouse_cloud_refresh");
+
+  const store = remember ? localStorage : sessionStorage;
+  if(cloudAccessToken) store.setItem("smokehouse_cloud_token", cloudAccessToken);
+  if(cloudRefreshToken) store.setItem("smokehouse_cloud_refresh", cloudRefreshToken);
+}
+
+async function refreshCloudSession(){
+  if(!cloudRefreshToken || !cloudReady()) return false;
+  try{
+    const r = await fetch(cloudBase()+"/auth/v1/token?grant_type=refresh_token",{
+      method:"POST",
+      headers:{
+        "apikey": cloudCfg().SUPABASE_ANON_KEY,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({refresh_token:cloudRefreshToken})
+    });
+    const data = await r.json();
+    if(!r.ok) throw new Error(data.error_description || data.msg || "Не удалось обновить вход");
+
+    const remember = !!localStorage.getItem("smokehouse_cloud_refresh");
+    storeCloudSession(data, remember);
+    return true;
+  }catch(e){
+    cloudAccessToken="";
+    cloudRefreshToken="";
+    localStorage.removeItem("smokehouse_cloud_token");
+    localStorage.removeItem("smokehouse_cloud_refresh");
+    sessionStorage.removeItem("smokehouse_cloud_token");
+    sessionStorage.removeItem("smokehouse_cloud_refresh");
+    return false;
+  }
+}
+
 async function cloudAdminLogin(){
   if(!cloudReady()){
     alert("Сначала настрой cloud_config.js");
     return;
   }
+
   const email = document.getElementById("adminEmail").value.trim();
   const password = document.getElementById("adminPassword").value;
+  const remember = document.getElementById("adminRemember")?.checked !== false;
+
   if(!email || !password){
     alert("Введите email и пароль");
     return;
   }
+
   try{
     const r = await fetch(cloudBase()+"/auth/v1/token?grant_type=password",{
       method:"POST",
@@ -1266,13 +1488,23 @@ async function cloudAdminLogin(){
       },
       body:JSON.stringify({email,password})
     });
+
     const data = await r.json();
     if(!r.ok) throw new Error(data.error_description || data.msg || "Ошибка входа");
-    cloudAccessToken = data.access_token;
-    sessionStorage.setItem("smokehouse_cloud_token", cloudAccessToken);
+
+    storeCloudSession(data, remember);
+
+    if(remember){
+      localStorage.setItem("smokehouse_admin_email", email);
+    }else{
+      localStorage.removeItem("smokehouse_admin_email");
+    }
+
+    document.getElementById("adminPassword").value = "";
     document.getElementById("adminLoginBox").style.display="none";
     document.getElementById("adminEditorBox").style.display="block";
     renderCloudRecipes();
+
   }catch(e){
     alert("Не удалось войти: "+e.message);
   }
@@ -1280,7 +1512,11 @@ async function cloudAdminLogin(){
 
 function cloudAdminLogout(){
   cloudAccessToken="";
+  cloudRefreshToken="";
+  localStorage.removeItem("smokehouse_cloud_token");
+  localStorage.removeItem("smokehouse_cloud_refresh");
   sessionStorage.removeItem("smokehouse_cloud_token");
+  sessionStorage.removeItem("smokehouse_cloud_refresh");
   resetCloudEditor();
   document.getElementById("adminLoginBox").style.display="block";
   document.getElementById("adminEditorBox").style.display="none";
@@ -1309,6 +1545,7 @@ function editCloudRecipe(id){
 
 async function uploadCloudPhoto(file){
   if(!file) return "";
+  if(!cloudAccessToken && cloudRefreshToken) await refreshCloudSession();
   const ext = (file.name.split(".").pop() || "jpg").replace(/[^a-zA-Z0-9]/g,"");
   const path = Date.now()+"_"+Math.random().toString(36).slice(2,10)+"."+ext;
   const bucket = cloudCfg().BUCKET || "recipe-photos";
@@ -1331,6 +1568,7 @@ async function uploadCloudPhoto(file){
 }
 
 async function saveCloudRecipe(){
+  if(!cloudAccessToken && cloudRefreshToken) await refreshCloudSession();
   if(!cloudAccessToken){
     alert("Сначала войдите как администратор");
     return;
@@ -1386,6 +1624,7 @@ async function saveCloudRecipe(){
 }
 
 async function deleteCloudRecipe(id){
+  if(!cloudAccessToken && cloudRefreshToken) await refreshCloudSession();
   if(!cloudAccessToken) return;
   if(!confirm("Удалить этот общий рецепт у всех пользователей?")) return;
   try{
